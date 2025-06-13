@@ -1,0 +1,6 @@
+You: open youtube
+
+You: question forest
+
+AI: Please provide me with a question.  "Question forest" isn't a question itself; it's a descriptive phrase.  I need the actual question you want answered.
+
