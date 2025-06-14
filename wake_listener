@@ -1,27 +1,34 @@
-import snowboydecoder
+import pvporcupine
+import sounddevice as sd
+import struct
 import subprocess
-import signal
-import sys
+import os
 
-interrupted = False
-
-def interrupt_callback():
-    global interrupted
-    return interrupted
-
-def detected_callback():
-    print("Wake word 'Alexa' detected!")
+def detected():
+    print("🔊 Wake word 'Alexa' detected!")
     subprocess.call(["python3", "alexa.py"])
 
-# Setup detector
-detector = snowboydecoder.HotwordDetector("resources/models/alexa.umdl", sensitivity=0.5)
-print("Listening for wake word 'Alexa'...")
+porcupine = pvporcupine.create(keywords=["alexa"])
+sampling_rate = porcupine.sample_rate
+frame_length = porcupine.frame_length
 
+def audio_callback(indata, frames, time, status):
+    if status:
+        print(status)
+    pcm = struct.unpack_from("h" * frame_length, indata)
+    result = porcupine.process(pcm)
+    if result >= 0:
+        detected()
+
+print("🎙️ Listening for 'Alexa'... (Press Ctrl+C to stop)")
 try:
-    detector.start(detected_callback=detected_callback,
-                   interrupt_check=interrupt_callback,
-                   sleep_time=0.03)
+    with sd.InputStream(channels=1, samplerate=sampling_rate, blocksize=frame_length, dtype='int16', callback=audio_callback):
+        while True:
+            pass
 except KeyboardInterrupt:
-    print("Interrupted by user")
-    detector.terminate()
-    sys.exit(0)
+    print("\n❌ Stopped wake listener.")
+except Exception as e:
+    print("❗ Error:", str(e))
+finally:
+    if porcupine:
+        porcupine.delete()
