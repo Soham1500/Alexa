@@ -1,3 +1,4 @@
+
 import google.generativeai as genai
 import speech_recognition as sr
 import pyttsx3
@@ -13,11 +14,11 @@ from num2words import num2words
 import re
 
 # ✅ Gemini API Setup
-genai.configure(api_key="AIzaSyDIqMo_kDdPef6fIlFzqOKAHmRIgWAdcZc")
+genai.configure(api_key="AIzaSyDIqMo_kDdPef6fIlFzqOKAHmRIgWAdcZc")  # Replace with your API key
 model = genai.GenerativeModel("models/gemini-1.5-flash")
 
-# ✅ OpenWeatherMap Setup
-WEATHER_API_KEY = "d60071ca6916b9d6c78fe204c02811b9"
+# ✅ Weather API Setup
+WEATHER_API_KEY = "d60071ca6916b9d6c78fe204c02811b9"  # Replace if needed
 CITY = "Pune"
 
 # ✅ TTS Setup
@@ -121,11 +122,11 @@ def main():
 
     talk = []
     sleeping = True
-    processing = False  # ✅ Added to prevent overlap
+    processing = False
 
     while True:
         if processing:
-            continue  # ✅ Skip listening if still processing previous command
+            continue
 
         with mic as source:
             rec.adjust_for_ambient_noise(source, duration=0.5)
@@ -136,7 +137,7 @@ def main():
                 text = rec.recognize_google(audio)
                 print(f"Heard: {text}")
 
-                processing = True  # ✅ Start processing
+                processing = True
 
                 if sleeping:
                     if "alexa" in text.lower():
@@ -154,6 +155,10 @@ def main():
                     sleeping = True
                     processing = False
                     continue
+
+                if "terminate" in request or "exit" in request:
+                    speak_text("Terminating voice assistant.")
+                    sys.exit(0)
 
                 if "alexa" in request:
                     request = request.split("alexa", 1)[1].strip()
@@ -208,7 +213,7 @@ def main():
                 append2log(f"AI: {response}\n")
                 speak_text(response)
 
-                processing = False  # ✅ Finished processing
+                processing = False
 
             except sr.UnknownValueError:
                 print("Didn't catch that.")
