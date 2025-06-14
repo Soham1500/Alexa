@@ -1,0 +1,27 @@
+import snowboydecoder
+import subprocess
+import signal
+import sys
+
+interrupted = False
+
+def interrupt_callback():
+    global interrupted
+    return interrupted
+
+def detected_callback():
+    print("Wake word 'Alexa' detected!")
+    subprocess.call(["python3", "alexa.py"])
+
+# Setup detector
+detector = snowboydecoder.HotwordDetector("resources/models/alexa.umdl", sensitivity=0.5)
+print("Listening for wake word 'Alexa'...")
+
+try:
+    detector.start(detected_callback=detected_callback,
+                   interrupt_check=interrupt_callback,
+                   sleep_time=0.03)
+except KeyboardInterrupt:
+    print("Interrupted by user")
+    detector.terminate()
+    sys.exit(0)
